@@ -35,10 +35,15 @@ public class Order extends AggregateRoot<OrderId> {
     }
 
     private void validateItemsPrice() {
-        items.stream().map(orderItem -> {
+        Money orderItemsTotal = items.stream().map(orderItem -> {
            validateItemPrice(orderItem);
            return orderItem.getSubTotal();
         }).reduce(Money.ZERO, Money::add);
+
+        if(!price.equals(orderItemsTotal)){
+            throw new OrderDomainException("Total price: " + price.getAmount()
+                    + " is not equal to Order items total: " + orderItemsTotal.getAmount());
+        }
     }
 
     private void validateItemPrice(OrderItem orderItem) {
